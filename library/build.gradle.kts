@@ -1,4 +1,6 @@
-import com.vanniktech.maven.publish.SonatypeHost
+
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinMultiplatform
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -8,7 +10,7 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-group = "io.github.kotlin"
+group = "com.github.universal-ble"
 version = "1.0.0"
 
 kotlin {
@@ -24,6 +26,7 @@ kotlin {
     iosArm64()
     iosSimulatorArm64()
     linuxX64()
+    macosX64()
 
     sourceSets {
         val commonMain by getting {
@@ -51,36 +54,35 @@ android {
     }
 }
 
+tasks.register("runAllPlatformTests") {
+    dependsOn(
+        "jvmTest",
+        "iosX64Test",
+        "iosSimulatorArm64Test",
+        "linuxX64Test",
+        "macosX64Test",
+        "testDebugUnitTest" // Android unit tests
+        // optionally also:
+        // "connectedDebugAndroidTest" // for Android instrumentation tests
+    )
+    group = "verification"
+    description = "Runs all platform unit tests including native and Android"
+}
+
 mavenPublishing {
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-
-    signAllPublications()
-
-    coordinates(group.toString(), "library", version.toString())
-
-    pom {
-        name = "My library"
-        description = "A library."
-        inceptionYear = "2024"
-        url = "https://github.com/kotlin/multiplatform-library-template/"
-        licenses {
-            license {
-                name = "XXX"
-                url = "YYY"
-                distribution = "ZZZ"
-            }
-        }
-        developers {
-            developer {
-                id = "XXX"
-                name = "YYY"
-                url = "ZZZ"
-            }
-        }
-        scm {
-            url = "XXX"
-            connection = "YYY"
-            developerConnection = "ZZZ"
-        }
-    }
+    // sources publishing is always enabled by the Kotlin Multiplatform plugin
+    configure(
+        KotlinMultiplatform(
+            // configures the -javadoc artifact, possible values:
+            // - `JavadocJar.None()` don't publish this artifact
+            // - `JavadocJar.Empty()` publish an empty jar
+            // - `JavadocJar.Dokka("dokkaHtml")` when using Kotlin with Dokka, where `dokkaHtml` is the name of the Dokka task that should be used as input
+            javadocJar = JavadocJar.None(),
+            // whether to publish a sources jar
+            sourcesJar = true,
+            // configure which Android library variants to publish if this project has an Android target
+            // defaults to "release" when using the main plugin and nothing for the base plugin
+            androidVariantsToPublish = listOf("debug", "release"),
+        )
+    )
 }
