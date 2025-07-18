@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-group = "com.github.universal-ble"
+group = "com.github.ddj.universal.ble"
 version = "1.0.0"
 
 kotlin {
@@ -32,6 +32,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 //put your multiplatform dependencies here
+                implementation(libs.kotlinx.coroutines)
             }
         }
         val commonTest by getting {
@@ -39,11 +40,16 @@ kotlin {
                 implementation(libs.kotlin.test)
             }
         }
+        val androidMain by getting {
+            dependencies {
+                implementation(libs.annotation)
+            }
+        }
     }
 }
 
 android {
-    namespace = "org.jetbrains.kotlinx.multiplatform.library.template"
+    namespace = "com.github.ddj.universal.ble"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
@@ -82,7 +88,7 @@ mavenPublishing {
             sourcesJar = true,
             // configure which Android library variants to publish if this project has an Android target
             // defaults to "release" when using the main plugin and nothing for the base plugin
-            androidVariantsToPublish = listOf("debug", "release"),
+            androidVariantsToPublish = listOf("release"),
         )
     )
 }
